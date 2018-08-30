@@ -4,8 +4,11 @@ var storeAzureLog = require('./azureReq');
 
 var client = new Client();
 
+var minecraftHost = '104.41.130.193';
+var minecraftServerPort = '25565';
+
 var workspaceId = 'd528a092-ae59-45a7-a723-2441027ddd2b';
-var minecraftInfoEndpoint = 'https://mcapi.us/server/status?ip=13.68.196.47&port=25565';
+var minecraftInfoEndpoint = 'https://mcapi.us/server/status?ip=' + minecraftHost + '&port=' + minecraftServerPort;
 var sharedKey = '8bWI3WfBf/4HnnKsZupGDhFKKHyFTWk4hjFJrZ0lL18yntwW9OpyLmcsSk+bd41zRyk8Rp9cuKTpF2bVcbrvDA==';
 
 function poll(fn, interval) {
