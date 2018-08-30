@@ -1,6 +1,6 @@
 var Client = require('node-rest-client').Client;
-var CryptoJS = require('ts.cryptojs256');
-
+var Crypto = require('crypto-js');
+var utf8 = require('utf8');
 
 var client = new Client();
 
@@ -9,15 +9,23 @@ var logAnalyticsEndpoint = 'https://d528a092-ae59-45a7-a723-2441027ddd2b.ods.opi
 
 var workspaceID = 'd528a092-ae59-45a7-a723-2441027ddd2b';
 function getSignature(contentLength) {
-    var signature = `POST
-    ${contentLength}
-    content-type: "application/json"
-    x-ms-date:${new Date().toUTCString()}
-    /api/logs`;
-    var encodedString = CryptoJS.enc.base64.stringify(signature);
-    var hmacHash = CryptoJS.HmacSHA256(encodedString, workspaceID);
+    var signature = 'POST' + '\\n' +
+        contentLength+'\\n' +
+        'application/json' + '\\n' +
+        'x-ms-date:' + new Date().toUTCString() + '\\n' + 
+        '/api/logs';
 
-    return hmacHash;
+    console.log();
+    console.log(signature);
+
+    var wordArray = Crypto.enc.Utf8.parse(signature);
+    var encodedBits = Crypto.HmacSHA256(wordArray, 'accessKeyBytes');
+    var base64 = Crypto.enc.Base64.stringify(encodedBits);
+
+    console.log();
+    console.log(base64);
+
+    return base64;
 }
 
 
@@ -41,17 +49,22 @@ function getMinecraftServerInfo() {
             data: serverInfo,
             headers: { 
                 'Content-Type': 'application/json',
-                'Authorization': `SharedKey ${workspaceID}:${getSignature(serverInfo.length)}`, 
+                'Authorization': `SharedKey ${workspaceID}:${getSignature(JSON.stringify(serverInfo).length)}`, 
                 'Log-Type': 'minecraftInfo', 
                 'x-ms-date': new Date().toUTCString(), 
                 'time-generated-field': new Date().toISOString()
             }
         };
+
         client.post(logAnalyticsEndpoint, args, function (data, response) {
+            console.log('DATA\n');
             console.log(data);
+            // console.log('RESPONSE\n');
             // console.log(response);
         });
+        // console.log(args);
+        // console.log(serverInfo);
     });
 }
 
-poll(getMinecraftServerInfo, 1000);
+poll(getMinecraftServerInfo, 60 * 1000);
